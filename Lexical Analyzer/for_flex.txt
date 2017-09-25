@@ -1,0 +1,40 @@
+%{
+#include<stdio.h>
+%}
+
+DIGIT [0-9]
+LETER            [a-zA-Z_]
+id                {LETER}({DIGIT}|{LETER})*
+IntegerLiteral    [1-9]{DIGIT}*|0
+
+%%
+"int" printf("INT");
+"float" printf("FLOAT");
+"boolean" printf("BOOLEAN");
+"static void main" printf("ENTRY_POINT");
+"System.out.println" printf("SYSTEM_OUT_PRINTLN");
+"class" printf("CLASS");
+"if" printf("IF");
+"else" printf("ELSE");
+"while" printf("WHILE");
+"new" printf("NEW");
+"this" printf("THIS");
+"return" printf("RETURN");
+"true" printf("TRUE");
+"false" printf("FALSE");
+"extends" printf("EXTENDS");
+"public" printf("PUBLIC");
+"String" printf("STRING");
+"&&" printf("AND");
+
+{id} printf("ID");
+{IntegerLiteral} printf("INTEGER_LITERAL");
+
+%%
+
+/*
+int main()
+{
+    yyparse();
+    return 0;
+}*/
