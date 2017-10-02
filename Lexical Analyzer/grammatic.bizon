@@ -1,0 +1,63 @@
+%{
+#include <stdio.h>
+#include <string.h>
+ 
+void yyerror(const char *str)
+{
+        fprintf(stderr,"ошибка: %s\n",str);
+}
+ 
+int yywrap()
+{
+        return 1;
+} 
+  
+main()
+{
+        yyparse();
+} 
+
+%}
+
+%token NEW CLASS EXTENDS THIS RETURN
+
+%token PUBLIC PRIVATE STATIC
+
+%token PRINTLN
+
+%token INT BOOLEAN
+
+%token VOID INT_ARRAY LENGTH
+
+%token TRUE FALSE
+
+%token WHILE IF ELSE
+
+%token <string> NUMBER
+
+%token <string> ID
+
+%token LPAREN RPAREN
+
+%token LBRACKET RBRACKET
+
+%token LBRACE RBRACE
+
+%token COMMA DOT SEMICOLON
+
+%token AND OR
+
+%token PLUS MINUS TIMES MOD
+
+%token MAIN
+
+%token STRING
+
+%token LESS GREATER NOT
+
+%token ASSIGN
+
+
+%%
+commands:
+
