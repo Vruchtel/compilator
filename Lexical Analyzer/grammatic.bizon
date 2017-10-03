@@ -1,23 +1,30 @@
 %{
 #include <stdio.h>
 #include <string.h>
- 
+
+#define YYSTYPE double
+
 void yyerror(const char *str)
 {
         fprintf(stderr,"ошибка: %s\n",str);
 }
  
-int yywrap()
+/*int yywrap()
 {
         return 1;
 } 
   
-main()
+int main()
 {
         yyparse();
-} 
+} */
 
 %}
+
+%union
+{
+	char *string;
+}
 
 %token NEW CLASS EXTENDS THIS RETURN
 
