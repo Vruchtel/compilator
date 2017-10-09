@@ -28,9 +28,19 @@ static void updateLocation() {
     yylloc.last_line = line_number;
     yylloc.last_column = column_number;
 
-    printf("%s", yytext);
-    printf(" begins in %d %d", yylloc.first_line, yylloc.first_column);
-    printf(" and ends in %d %d\n", yylloc.last_line, yylloc.last_column);
+    int notSpaceOrNewLine = 1;
+
+    for (int i = 0; i < yyleng; i++) {
+	if(yytext[i] == ' ' || yytext[i] == '\n') {
+	    notSpaceOrNewLine = 0;
+        }
+    }
+ 
+    if (notSpaceOrNewLine == 1) {
+	printf("%s", yytext);
+        printf(" begins in %d %d", yylloc.first_line, yylloc.first_column);
+	printf(" and ends in %d %d\n", yylloc.last_line, yylloc.last_column);
+    }
 }
 
 #define YY_USER_ACTION updateLocation();
@@ -88,4 +98,9 @@ IntegerLiteral [1-9]{DIGIT}*|0
 {id} return ID;
 {IntegerLiteral} return NUMBER;
 
+"//".*$
+"/*".*"*/"
+"\n"
+[[:space:]]
+.
 %%
