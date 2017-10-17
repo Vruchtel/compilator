@@ -1,63 +1,171 @@
 %{
 #include <stdio.h>
 #include <string.h>
- 
+
+//#include "JavaCompilerDefinitions.h"
+
+#define YYSTYPE double
+
 void yyerror(const char *str)
 {
         fprintf(stderr,"ошибка: %s\n",str);
 }
  
-int yywrap()
+/*int yywrap()
 {
         return 1;
 } 
   
-main()
+int main()
 {
         yyparse();
-} 
+} */
 
 %}
 
+%code {
+int yylex (void);
+}
+
+%union
+{
+	char *string;
+
+	const IProgram* Program;
+	const IMainClass* MainClass;
+	const IClassDeclList* ClassDeclList;
+	const IClassDeclaration* ClassDeclaration;
+	const IVarDeclList* VarDeclList;
+	const IVarDeclaration* VarDeclaration;
+	const IMethodDeclList* MethodDeclList;
+	const IMethodDeclaration* MethodDeclaration;
+	const IType* Type;
+	const IStatementList* StatementList;
+	const IStatement* Statement;
+	const IExpList* ExpList;
+	const IExp* Exp;
+}
+
 %token NEW CLASS EXTENDS THIS RETURN
-
 %token PUBLIC PRIVATE STATIC
-
 %token PRINTLN
-
 %token INT BOOLEAN
-
 %token VOID INT_ARRAY LENGTH
-
 %token TRUE FALSE
-
 %token WHILE IF ELSE
-
-%token <string> NUMBER
-
-%token <string> ID
-
 %token LPAREN RPAREN
-
 %token LBRACKET RBRACKET
-
 %token LBRACE RBRACE
-
 %token COMMA DOT SEMICOLON
-
 %token AND OR
-
 %token PLUS MINUS TIMES MOD
-
 %token MAIN
-
 %token STRING
-
 %token LESS GREATER NOT
-
 %token ASSIGN
 
+%token <string> NUMBER
+%token <string> ID
+
+
+%type <Program> Program
+%type <MainClass> MainClass
+%type <ClassDeclList> ClassDeclList
+%type <ClassDeclaration> ClassDeclaration
+%type <VarDeclList> VarDeclList
+%type <VarDeclaration> VarDeclaration
+%type <MethodDeclList> MethodDeclList
+%type <MethodDeclaration> MethodDeclaration
+%type <FormalList> FormalList
+%type <FormalList> FormalRest
+%type <Type> Type
+%type <Statements> StatementList
+%type <Statement> Statement
+%type <ExpList> ExpList
+%type <ExpList> ExpRest
+%type <Exp> Exp
 
 %%
-commands:
+Program: MainClass ClassDeclList {$$ = new CProgram( $1, $2 );}
+;
 
+MainClass: CLASS ID LBRACE PUBLIC STATIC VOID MAIN LPAREN STRING LBRACKET RBRACKET ID RPAREN LBRACE Statement RBRACE RBRACE {}
+;
+
+ClassDeclList : ClassDeclaration ClassDeclList {}
+	| /*empty*/ {}
+;
+
+ClassDeclaration: CLASS ID LBRACE VarDeclList MethodDeclList RBRACE {} 
+	| CLASS ID EXTENDS ID LBRACE VarDeclList MethodDeclList RBRACE {}
+;
+
+VarDeclList: VarDeclList VarDeclaration {}
+	| /*empty*/ {}
+;
+
+VarDeclaration: Type ID SEMICOLON {}
+;
+
+MethodDeclList: MethodDeclaration MethodDeclList {}
+	| /*empty*/ {}
+;
+
+MethodDeclaration: PUBLIC Type ID LPAREN FormalList RPAREN LBRACE VarDeclList StatementList RETURN Exp SEMICOLON RBRACE {}
+	| PRIVATE Type ID LPAREN FormalList RPAREN LBRACE VarDeclList StatementList RETURN Exp SEMICOLON RBRACE {}
+;
+
+Type: INT LBRACKET RBRACKET {}
+	| BOOLEAN {}
+	| INT {}
+	| ID {}
+;
+
+StatementList: Statement StatementList {}
+	| /*empty*/ {}
+;
+
+Statement: LBRACE StatementList RBRACE {}
+	| IF LPAREN Exp RPAREN Statement ELSE Statement {}
+	| WHILE LPAREN Exp RPAREN Statement {}
+	| PRINTLN LPAREN Exp RPAREN SEMICOLON {}
+	| ID ASSIGN Exp SEMICOLON {}
+	| ID LBRACKET Exp RBRACKET ASSIGN Exp SEMICOLON {}
+;
+
+Exp: Exp AND Exp {}
+	| Exp LESS Exp {}
+	| Exp PLUS Exp {}
+	| Exp MINUS Exp {}
+	| Exp TIMES Exp {}
+	| Exp MOD Exp {}
+	| Exp OR Exp {}
+	| Exp LBRACKET Exp RBRACKET {}
+	| Exp DOT LENGTH {}
+	| Exp DOT ID LPAREN ExpList RPAREN {}
+	| NUMBER {}
+	| TRUE {}
+	| FALSE {}
+	| ID {}
+	| THIS {}
+	| NEW INT LBRACKET Exp RBRACKET {}
+	| NEW ID LPAREN RPAREN {}
+	| NOT Exp {}
+	| LPAREN Exp RPAREN {}
+;
+
+ExpList: Exp ExpRest {}
+	| /*empty*/ {}
+;
+
+ExpRest: COMMA Exp ExpRest {}
+	| /*empty*/ {}
+;
+
+FormalList: Type ID FormalRest {}
+ 	| /*empty*/ {}
+;
+
+FormalRest: COMMA Type ID FormalRest {}
+	| /*empty*/ {}
+;
