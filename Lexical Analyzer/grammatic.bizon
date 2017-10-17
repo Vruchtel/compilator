@@ -4,7 +4,10 @@
 
 //#include "JavaCompilerDefinitions.h"
 
-#define YYSTYPE double
+//#define YYSTYPE double
+
+class IProgram;
+class CProgram;	// определяет IProgram, содержит указатель на MainClass и на список ост. классов
 
 void yyerror(const char *str)
 {
@@ -86,6 +89,7 @@ int yylex (void);
 %type <Exp> Exp
 
 %%
+
 Program: MainClass ClassDeclList {$$ = new CProgram( $1, $2 );}
 ;
 

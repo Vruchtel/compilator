@@ -1,0 +1,8 @@
+bison -d -v -o grammatic.bizon.c grammatic.bizon
+flex grammatic.flex
+gcc -lfl grammatic.bizon.c lex.yy.c
+./a.out
+
+или
+
+bison -d -v -o grammatic.bizon.c grammatic.bizon && flex grammatic.flex && g++ -lfl grammatic.bizon.c lex.yy.c && ./a.out
