@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 
-//#include "JavaCompilerDefinitions.h"
+#include "JavaCompilerDefinitions.h"
 
 //#define YYSTYPE double
 
-class IProgram;
-class CProgram;	// определяет IProgram, содержит указатель на MainClass и на список ост. классов
+//class IProgram;
+//class CProgram;	// определяет IProgram, содержит указатель на MainClass и на список ост. классов
 
 void yyerror(const char *str)
 {
@@ -42,6 +42,7 @@ int yylex (void);
 	const IVarDeclaration* VarDeclaration;
 	const IMethodDeclList* MethodDeclList;
 	const IMethodDeclaration* MethodDeclaration;
+	const IFormalList* FormalList;
 	const IType* Type;
 	const IStatementList* StatementList;
 	const IStatement* Statement;
@@ -82,7 +83,7 @@ int yylex (void);
 %type <FormalList> FormalList
 %type <FormalList> FormalRest
 %type <Type> Type
-%type <Statements> StatementList
+%type <StatementList> StatementList
 %type <Statement> Statement
 %type <ExpList> ExpList
 %type <ExpList> ExpRest
@@ -93,51 +94,69 @@ int yylex (void);
 Program: MainClass ClassDeclList {$$ = new CProgram( $1, $2 );}
 ;
 
-MainClass: CLASS ID LBRACE PUBLIC STATIC VOID MAIN LPAREN STRING LBRACKET RBRACKET ID RPAREN LBRACE Statement RBRACE RBRACE {}
+MainClass: CLASS ID LBRACE PUBLIC STATIC VOID MAIN LPAREN STRING LBRACKET RBRACKET ID RPAREN LBRACE Statement RBRACE RBRACE 
+	{
+		$$ = new CMainClass( $2, $12, $15 );
+	}
 ;
 
-ClassDeclList : ClassDeclaration ClassDeclList {}
-	| /*empty*/ {}
+ClassDeclList : ClassDeclaration ClassDeclList 
+	{
+		$$ = new CClassDeclList( $1, $2 );
+	}
+	| /*empty*/ { $$ = 0; }
 ;
 
-ClassDeclaration: CLASS ID LBRACE VarDeclList MethodDeclList RBRACE {} 
-	| CLASS ID EXTENDS ID LBRACE VarDeclList MethodDeclList RBRACE {}
+ClassDeclaration: CLASS ID LBRACE VarDeclList MethodDeclList RBRACE 
+	{
+		$$ = new CClassDeclaration( $2, 0, $4, $5 );
+	} 
+	| CLASS ID EXTENDS ID LBRACE VarDeclList MethodDeclList RBRACE 
+	{
+		$$ = new CClassDeclaration( $2, $4, $6, $7 );
+	}
 ;
 
-VarDeclList: VarDeclList VarDeclaration {}
-	| /*empty*/ {}
+VarDeclList: VarDeclList VarDeclaration { $$ = new CVarDeclList( $2, $1 ); }
+	| /*empty*/ { $$ = 0; }
 ;
 
-VarDeclaration: Type ID SEMICOLON {}
+VarDeclaration: Type ID SEMICOLON { $$ = new CVarDeclaration( $1, $2 ); }
 ;
 
-MethodDeclList: MethodDeclaration MethodDeclList {}
-	| /*empty*/ {}
+MethodDeclList: MethodDeclaration MethodDeclList { $$ = new CMethodDeclList( $1, $2 ); }
+	| /*empty*/ { $$ = 0; }
 ;
 
-MethodDeclaration: PUBLIC Type ID LPAREN FormalList RPAREN LBRACE VarDeclList StatementList RETURN Exp SEMICOLON RBRACE {}
-	| PRIVATE Type ID LPAREN FormalList RPAREN LBRACE VarDeclList StatementList RETURN Exp SEMICOLON RBRACE {}
+MethodDeclaration: PUBLIC Type ID LPAREN FormalList RPAREN LBRACE VarDeclList StatementList RETURN Exp SEMICOLON RBRACE 
+	{
+		$$ = new CMethodDeclaration( $2, $3, $5, $8, $9, $11 );
+	}
+	| PRIVATE Type ID LPAREN FormalList RPAREN LBRACE VarDeclList StatementList RETURN Exp SEMICOLON RBRACE 
+	{
+		$$ = new CMethodDeclaration( $2, $3, $5, $8, $9, $11 );
+	}
 ;
 
-Type: INT LBRACKET RBRACKET {}
+Type: INT LBRACKET RBRACKET {} // надо доделать, но я пока не очень понимаю, как
 	| BOOLEAN {}
 	| INT {}
-	| ID {}
+	| ID { $$ = new CClassType( $1 ); }
 ;
 
-StatementList: Statement StatementList {}
-	| /*empty*/ {}
+StatementList: Statement StatementList { $$ = new CStatementList( $1, $2 ); }
+	| /*empty*/ { $$ = 0; }
 ;
 
-Statement: LBRACE StatementList RBRACE {}
-	| IF LPAREN Exp RPAREN Statement ELSE Statement {}
-	| WHILE LPAREN Exp RPAREN Statement {}
-	| PRINTLN LPAREN Exp RPAREN SEMICOLON {}
-	| ID ASSIGN Exp SEMICOLON {}
-	| ID LBRACKET Exp RBRACKET ASSIGN Exp SEMICOLON {}
+Statement: LBRACE StatementList RBRACE { $$ = new CEnclosedStatement( $2 ); }
+	| IF LPAREN Exp RPAREN Statement ELSE Statement { $$ = new CIfElseStatement( $3, $5, $7 ); }
+	| WHILE LPAREN Exp RPAREN Statement { $$ = new CWhileStatement( $3, $5 ); }
+	| PRINTLN LPAREN Exp RPAREN SEMICOLON { $$ = new CPrintStatement( $3 ); }
+	| ID ASSIGN Exp SEMICOLON { $$ = new CAssignStatement( $1, $3 ); }
+	| ID LBRACKET Exp RBRACKET ASSIGN Exp SEMICOLON { $$ = new CAssignByIdxStatement( $1, $3, $6 ); }
 ;
 
-Exp: Exp AND Exp {}
+Exp: Exp AND Exp {} // надо доделать, очень надо...
 	| Exp LESS Exp {}
 	| Exp PLUS Exp {}
 	| Exp MINUS Exp {}
@@ -158,7 +177,7 @@ Exp: Exp AND Exp {}
 	| LPAREN Exp RPAREN {}
 ;
 
-ExpList: Exp ExpRest {}
+ExpList: Exp ExpRest { $$ = new CExpList( $1, $2 ); }
 	| /*empty*/ {}
 ;
 
