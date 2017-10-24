@@ -76,12 +76,12 @@ private:
 
 class CMainClass : public IMainClass {
 public:
-	CMainClass(const IStatement *_st, const char *_mcN, const char *_asN): st(_st), mainClassName(_mcN), argsStringName(_asN) {}
+	CMainClass(const char *_mcN, const char *_asN, const IStatement *_st): mainClassName(_mcN), argsStringName(_asN), st(_st) {}
 	
 private:
-	const IStatement *st;
 	const char *mainClassName;
 	const char *argsStringName;
+	const IStatement *st;
 };
 
 class CClassDeclList : public IClassDeclList {
@@ -222,8 +222,8 @@ private:
 	// TODO...
 };
 
-class CExpList : public IExpList {
+/*class CExpList : public IExpList {
 public:
 
 private:
-};
+};*/

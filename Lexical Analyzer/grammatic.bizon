@@ -177,7 +177,7 @@ Exp: Exp AND Exp {} // надо доделать, очень надо...
 	| LPAREN Exp RPAREN {}
 ;
 
-ExpList: Exp ExpRest { $$ = new CExpList( $1, $2 ); }
+ExpList: Exp ExpRest {/* $$ = new CExpList( $1, $2 );*/ }
 	| /*empty*/ {}
 ;
 

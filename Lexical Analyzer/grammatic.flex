@@ -1,6 +1,7 @@
 %{
 #include<stdio.h>
-"include "y.tab.h"
+#include "JavaCompilerDefinitions.h"
+#include "grammatic.bizon.h"
 
 struct {
     int first_line;
@@ -28,13 +29,25 @@ static void updateLocation() {
     yylloc.last_line = line_number;
     yylloc.last_column = column_number;
 
-    printf("%s", yytext);
-    printf(" begins in %d %d", yylloc.first_line, yylloc.first_column);
-    printf("and ends in %d %d\n", yylloc.last_line, yylloc.last_column);
+    int notSpaceOrNewLine = 1;
+
+    for (int i = 0; i < yyleng; i++) {
+	if(yytext[i] == ' ' || yytext[i] == '\n') {
+	    notSpaceOrNewLine = 0;
+        }
+    }
+ 
+    if (notSpaceOrNewLine == 1) {
+	printf("%s", yytext);
+        printf(" begins in %d %d", yylloc.first_line, yylloc.first_column);
+	printf(" and ends in %d %d\n", yylloc.last_line, yylloc.last_column);
+    }
 }
 
-//#define YY_USER_ACTION updateLocation();
+#define YY_USER_ACTION updateLocation();
 %}
+
+%option noyywrap
 
 DIGIT [0-9]
 LETER [a-zA-Z_]
@@ -43,7 +56,6 @@ IntegerLiteral [1-9]{DIGIT}*|0
 
 %%
 "int" return INT;
-"float" return FLOAT;
 "boolean" return BOOLEAN;
 "System.out.println" PRINTLN;
 "class" return CLASS;
@@ -55,7 +67,7 @@ IntegerLiteral [1-9]{DIGIT}*|0
 "return" return RETURN;
 "true" return TRUE;
 "false" return FALSE;
-"extends" return EXTANDS;
+"extends" return EXTENDS;
 "public" return PUBLIC;
 "private" return PRIVATE;
 "String" return STRING;
@@ -65,7 +77,7 @@ IntegerLiteral [1-9]{DIGIT}*|0
 "int[]" return INT_ARRAY;
 "length" return LENGTH;
 "&&" return AND;
-"||" reutrn OR;
+"||" return OR;
 "+" return PLUS;
 "-" return MINUS;
 "*" return TIMES;
@@ -82,12 +94,14 @@ IntegerLiteral [1-9]{DIGIT}*|0
 "," return COMMA;
 "." return DOT;
 ";" return SEMICOLON;
-"%" return MOD;
-
-[[:space:]] updateLocation();
-" \n" updateLocation(); 
+"%" return MOD; 
 
 {id} return ID;
 {IntegerLiteral} return NUMBER;
 
+"//".*$
+"/*".*"*/"
+"\n"
+[[:space:]]
+.
 %%
